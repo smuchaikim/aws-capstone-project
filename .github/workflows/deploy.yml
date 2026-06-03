@@ -1,0 +1,31 @@
+name: AWS OIDC Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::814871720743:role/GitHubActionsRole
+          aws-region: us-east-1
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
+
+      - name: Create S3 bucket via OIDC credentials
+        run: |
+          aws s3 mb s3://capstone-oidc-deploy-814871720743 --region us-east-1
+          echo "Deployed successfully using temporary OIDC credentials"
